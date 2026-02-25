@@ -1,6 +1,7 @@
 const Donor = require("../models/Donor");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/AppError");
+const APIFeatures = require("../utils/APIFeatures");
 
 // @desc    Create or Update Donor Profile
 // @route   POST /api/v1/donors
@@ -55,70 +56,28 @@ exports.getMyDonorProfile = catchAsync(async (req, res, next) => {
 // @route   GET /api/v1/donors
 // @access  Public
 exports.getDonors = catchAsync(async (req, res, next) => {
-  const queryObj = { ...req.query };
-  const excludedFields = ['page', 'sort', 'limit', 'fields'];
-  excludedFields.forEach(el => delete queryObj[el]);
+  const features = new APIFeatures(Donor.find(), req.query)
+    .filter()
+    .search()
+    .sort()
+    .limitFields()
+    .paginate();
 
-  // Advanced Filtering
-  let queryStr = JSON.stringify(queryObj);
-  
-  // 1. Partial Search for Name/Email/Phone (using regex)
-  if (req.query.search) {
-    const searchRegex = new RegExp(req.query.search, 'i'); // case insensitive
-    queryObj.$or = [
-      { name: searchRegex },
-      { email: searchRegex },
-      { phone: searchRegex },
-      { bloodGroup: searchRegex },
-      { 'location.city': searchRegex },
-      { 'location.state': searchRegex },
-      { 'location.formattedAddress': searchRegex }
-    ];
-    delete queryObj.search; // Remove 'search' from exact match fields
-  }
+  const donors = await features.query;
 
-  // 2. Exact match filtering (e.g. ?bloodGroup=A+&availability=true)
-  // This is already handled by queryObj = { ...req.query } and removing excluded fields
-
-  let query = Donor.find(queryObj);
-
-  // 3. Sorting
-  if (req.query.sort) {
-    const sortBy = req.query.sort.split(',').join(' ');
-    query = query.sort(sortBy);
-  } else {
-    query = query.sort('-createdAt'); // Default sort: newest first
-  }
-
-  // 4. Field Limiting
-  if (req.query.fields) {
-    const fields = req.query.fields.split(',').join(' ');
-    query = query.select(fields);
-  } else {
-    query = query.select('-__v');
-  }
-
-  // 5. Pagination
-  const page = parseInt(req.query.page, 10) || 1;
-  const limit = parseInt(req.query.limit, 10) || 10;
-  const skip = (page - 1) * limit;
-
-  query = query.skip(skip).limit(limit);
-
-  // Execute Query
-  const donors = await query;
-  const total = await Donor.countDocuments(queryObj);
+  // Count total documents for pagination metadata (filtering applied but not pagination)
+  const total = await Donor.countDocuments(features.query.getFilter());
 
   res.status(200).json({
     success: true,
     count: donors.length,
     total,
     pagination: {
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit)
+      page: parseInt(req.query.page, 10) || 1,
+      limit: parseInt(req.query.limit, 10) || 10,
+      totalPages: Math.ceil(total / (parseInt(req.query.limit, 10) || 10)),
     },
-    data: donors
+    data: donors,
   });
 });
 
