@@ -1,24 +1,18 @@
 {
-  "name": "blooddonarsystem",
+  "name": "donor-service",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/smahesh-kumarr/bloodDonarSystem.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/smahesh-kumarr/bloodDonarSystem/issues"
-  },
-  "homepage": "https://github.com/smahesh-kumarr/bloodDonarSystem#readme",
   "description": "",
   "dependencies": {
-    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
