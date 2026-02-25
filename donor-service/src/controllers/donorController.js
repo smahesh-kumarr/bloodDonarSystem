@@ -56,9 +56,15 @@ exports.getMyDonorProfile = catchAsync(async (req, res, next) => {
 // @route   GET /api/v1/donors
 // @access  Public
 exports.getDonors = catchAsync(async (req, res, next) => {
+  // Fix URL decoding: 'A+' -> 'A ' in req.query.bloodGroup
+  if (req.query.bloodGroup && req.query.bloodGroup.includes(" ")) {
+    req.query.bloodGroup = req.query.bloodGroup.replace(/ /g, "+");
+  }
+
   const features = new APIFeatures(Donor.find(), req.query)
     .filter()
     .search()
+    .build() 
     .sort()
     .limitFields()
     .paginate();

@@ -9,7 +9,7 @@ class APIFeatures {
     const excludedFields = ["page", "sort", "limit", "fields", "search"];
     excludedFields.forEach((el) => delete queryObj[el]);
 
-    // Advanced filtering ?? (e.g. gte, gt, lte, lt)
+    // Advanced filtering
     let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
 
@@ -18,9 +18,21 @@ class APIFeatures {
     return this;
   }
 
+  build() {
+    this.query = this.query.find(this.filterObj);
+    return this;
+  }
+
   search() {
     if (this.queryString.search) {
-      const searchRegex = new RegExp(this.queryString.search, "i");
+      // Escape special characters to prevent regex errors
+      // const searchStr = this.queryString.search.replace(
+      //   /[-[\]{}()*+?.,\\^$|#\s]/g,
+      //   "\\$&",
+      // );
+      const searchStr = this.queryString.search.trim();
+      const searchRegex = new RegExp(searchStr, "i");
+
       this.query = this.query.find({
         $or: [
           { name: searchRegex },
