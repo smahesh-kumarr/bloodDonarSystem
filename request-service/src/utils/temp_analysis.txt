@@ -1,0 +1,32 @@
+const mongoose = require('mongoose');
+
+// We are defining a minimal Donor schema here to interact with the 'donors' collection
+// residing in the 'blood-donation-donor' database.
+//
+// In a microservices architecture, ideally, we should interact via API calls.
+// However, since we are exploring Mongoose cross-db access or simplified local dev,
+// we might not have direct access to the other DB connection unless we configure it.
+//
+// STOP: The user said "Query Donor model". In strict microservices, Request Service 
+// doesn't have access to Donor DB. 
+//
+// OPTION A: Synchronous HTTP Call to Donor Service (Best Practice for Microservices isolation)
+// OPTION B: Direct DB Access (If user implies shared cluster/hack).
+// 
+// Given the user prompt context "Query Donor model using...", and the structure shows separate folders.
+// But usually in these refined tutorials, people often use separate connections or just mock it.
+//
+// Let's look at config/db.js to see how connection is handled.
+// If typical mongoose.connect is used, it connects to ONE db.
+// Request service connects to 'blood-donation-request'.
+// Donor service connects to 'blood-donation-donor'.
+//
+// To query Donors from Request Service, we need to either:
+// 1. Make an HTTP request to Donor Service (localhost:5002)
+// 2. Open a second mongoose connection to 'blood-donation-donor'
+//
+// I will implement a Helper to make HTTP internal requests, OR if the user simplified it 
+// and logic implies strict code interpretation "Query Donor model", I might need to simulate/stub it 
+// or check if I can assume shared DB.
+//
+// Let's pause and check how `db.js` is set up.
