@@ -6,6 +6,7 @@ const APIFeatures = require("../utils/APIFeatures");
 const {
   getCompatibleDonorBloodGroups,
 } = require("../utils/bloodCompatibility");
+const { notifyDonors } = require("../utils/notificationClient");
 
 // @desc    Create a blood request
 exports.createRequest = catchAsync(async (req, res, next) => {
@@ -19,17 +20,24 @@ exports.createRequest = catchAsync(async (req, res, next) => {
 
   // 3. Find Matching Donors in External DB
   // only select necessary fields to protect privacy
+  // Exclude the requester themselves from the donor search
   const compatibleDonors = await ExternalDonor.find({
     bloodGroup: { $in: compatibleGroups },
     availability: true,
+    userId: { $ne: req.user.id }
   }).select("name bloodGroup location phone email");
+
+  // 4. Notify Donors (Fire and Forget)
+  if (compatibleDonors.length > 0) {
+    notifyDonors(compatibleDonors, request);
+  }
 
   res.status(201).json({
     success: true,
     data: {
       request,
       matchingDonors: compatibleDonors,
-      message: `Request created. Found ${compatibleDonors.length} compatible donors.`,
+      message: `Request created. Found ${compatibleDonors.length} compatible donors. Notifications sent.`,
     },
   });
 });
