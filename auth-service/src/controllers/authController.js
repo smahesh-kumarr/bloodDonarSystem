@@ -85,12 +85,12 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
   await user.save({ validateBeforeSave: false });
 
-  // Create reset url
-  const resetUrl = `${req.protocol}://${req.get(
-    "host",
-  )}/api/v1/auth/resetpassword/${resetToken}`;
-
-  const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
+  // Create reset url pointing to frontend
+  // In production, this should be in an env var like process.env.FRONTEND_URL
+  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+  const resetUrl = `${frontendUrl}/resetpassword/${resetToken}`;
+ 
+  const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please click the link below to reset your password: \n\n ${resetUrl}`;
 
   try {
     await sendEmail({
