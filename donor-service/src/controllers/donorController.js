@@ -87,7 +87,20 @@ exports.getDonors = catchAsync(async (req, res, next) => {
     req.query.bloodGroup = req.query.bloodGroup.replace(/ /g, "+");
   }
 
-  const features = new APIFeatures(Donor.find(), req.query)
+  // Enforce 3-month gap rule & availability
+  const threeMonthsAgo = new Date();
+  threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
+  const eligibilityFilter = {
+    availability: true,
+    $or: [
+      { lastDonationDate: { $exists: false } },
+      { lastDonationDate: null },
+      { lastDonationDate: { $lte: threeMonthsAgo } },
+    ],
+  };
+
+  const features = new APIFeatures(Donor.find(eligibilityFilter), req.query)
     .filter()
     .search()
     .build()
@@ -133,6 +146,9 @@ exports.getDonorsNearby = catchAsync(async (req, res, next) => {
   // Earth Radius = 6378 km
   // radians = distance / radius
 
+  const threeMonthsAgo = new Date();
+  threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
   const donors = await Donor.find({
     location: {
       $near: {
@@ -143,6 +159,12 @@ exports.getDonorsNearby = catchAsync(async (req, res, next) => {
         $maxDistance: parseFloat(radius) * 1000, // convert to meters
       },
     },
+    availability: true,
+    $or: [
+      { lastDonationDate: { $exists: false } },
+      { lastDonationDate: null },
+      { lastDonationDate: { $lte: threeMonthsAgo } },
+    ],
   });
 
   res.status(200).json({
