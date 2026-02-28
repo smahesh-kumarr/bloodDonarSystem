@@ -2,6 +2,7 @@ const express = require("express");
 const {
   createDonorProfile,
   getMyDonorProfile,
+  updateDonorProfile,
   getDonors,
   getDonorsNearby,
   toggleAvailability,
@@ -15,7 +16,10 @@ const router = express.Router();
 
 router.route("/").post(protect, createDonorProfile).get(getDonors); // Publicly searchable? Yes.
 
-router.get("/me", protect, getMyDonorProfile);
+router
+  .route("/me")
+  .get(protect, getMyDonorProfile)
+  .put(protect, updateDonorProfile);
 router.get("/nearby", getDonorsNearby);
 router.patch("/availability", protect, toggleAvailability);
 

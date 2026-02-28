@@ -52,6 +52,32 @@ exports.getMyDonorProfile = catchAsync(async (req, res, next) => {
   });
 });
 
+// @desc    Update Donor Profile
+// @route   PUT /api/v1/donors/me
+// @access  Private
+exports.updateDonorProfile = catchAsync(async (req, res, next) => {
+  let donor = await Donor.findOne({ userId: req.user.id });
+
+  if (!donor) {
+    return next(new AppError("No donor profile found", 404));
+  }
+
+  // Prevent updating userId
+  if (req.body.userId) {
+    delete req.body.userId;
+  }
+
+  donor = await Donor.findOneAndUpdate({ userId: req.user.id }, req.body, {
+    new: true,
+    runValidators: true,
+  });
+
+  res.status(200).json({
+    success: true,
+    data: donor,
+  });
+});
+
 // @desc    Get all donors (with filtering)
 // @route   GET /api/v1/donors
 // @access  Public
@@ -64,7 +90,7 @@ exports.getDonors = catchAsync(async (req, res, next) => {
   const features = new APIFeatures(Donor.find(), req.query)
     .filter()
     .search()
-    .build() 
+    .build()
     .sort()
     .limitFields()
     .paginate();
