@@ -114,10 +114,10 @@ exports.getDonors = catchAsync(async (req, res, next) => {
     .paginate();
 
   const donors = await features.query;
-  
+
   // Debug log
-  console.log('Query:', req.query);
-  console.log('Donors found:', donors.length);
+  console.log("Query:", req.query);
+  console.log("Donors found:", donors.length);
   // console.log('First donor location:', donors[0]?.location);
 
   // Count total documents for pagination metadata (filtering applied but not pagination)
