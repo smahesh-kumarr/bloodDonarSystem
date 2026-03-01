@@ -5,6 +5,8 @@ import { toast } from 'react-toastify';
 import { Lock, CheckCircle, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+import AuthLayout from '../components/AuthLayout';
+
 const ResetPassword = () => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -36,18 +38,10 @@ const ResetPassword = () => {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-red-50 to-gray-100 font-sans">
-            <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl border border-gray-100"
-            >
-                <div className="text-center mb-8">
-                    <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Set New Password</h2>
-                    <p className="mt-2 text-sm text-gray-500">Enter your new secure password</p>
-                </div>
-
+    <AuthLayout
+        title="Set New Password"
+        subtitle="Enter your new secure password"
+    >
                 <form className="space-y-6" onSubmit={handleSubmit}>
                     <div className="space-y-4">
                         <div className="relative group">
@@ -120,8 +114,7 @@ const ResetPassword = () => {
                         )}
                     </motion.button>
                 </form>
-            </motion.div>
-        </div>
+    </AuthLayout>
     );
 };
 

@@ -5,6 +5,8 @@ import { toast } from "react-toastify";
 import { User, Mail, Lock, UserPlus, Eye, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
 
+import AuthLayout from "../components/AuthLayout";
+
 const Register = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -32,20 +34,10 @@ const Register = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-red-50 to-gray-100 font-sans">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl border border-gray-100"
-      >
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">
-            Create Account
-          </h2>
-          <p className="mt-2 text-sm text-gray-500">Join the community today</p>
-        </div>
-
+    <AuthLayout
+      title="Create Account"
+      subtitle="Join the community today"
+    >
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div className="relative group">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -161,8 +153,7 @@ const Register = () => {
             </Link>
           </p>
         </div>
-      </motion.div>
-    </div>
+    </AuthLayout>
   );
 };
 

@@ -5,6 +5,8 @@ import { toast } from 'react-toastify';
 import { Mail, ArrowLeft, Send } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+import AuthLayout from '../components/AuthLayout';
+
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,18 +26,10 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-red-50 to-gray-100 font-sans">
-      <motion.div 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl border border-gray-100"
-      >
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Recover Password</h2>
-          <p className="mt-2 text-sm text-gray-500">Enter your email to receive a reset link</p>
-        </div>
-        
+    <AuthLayout
+      title="Recover Password"
+      subtitle="Enter your email to receive a reset link"
+    >
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div className="relative group">
@@ -77,13 +71,12 @@ const ForgotPassword = () => {
         </form>
 
         <div className="text-center mt-6">
-          <Link to="/login" className="inline-flex items-center text-sm font-semibold text-gray-600 hover:text-red-600 transition-colors">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Login
-          </Link>
+            <Link to="/login" className="inline-flex items-center text-sm font-semibold text-gray-600 hover:text-red-600 transition-colors">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Login
+            </Link>
         </div>
-      </motion.div>
-    </div>
+    </AuthLayout>
   );
 };
 
