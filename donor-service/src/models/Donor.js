@@ -23,6 +23,18 @@ const donorSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please add a phone number"],
   },
+  age: {
+    type: Number,
+    required: [true, "Please add age"],
+  },
+  weight: {
+    type: Number,
+    required: [true, "Please add weight"],
+  },
+  medicalHistory: {
+    type: [String],
+    default: [],
+  },
   location: {
     // GeoJSON Point
     type: {
@@ -33,6 +45,7 @@ const donorSchema = new mongoose.Schema({
     coordinates: {
       type: [Number], // [longitude, latitude]
       index: "2dsphere", // Create a geospatial index
+      default: [0, 0],
     },
     formattedAddress: String,
     street: String,

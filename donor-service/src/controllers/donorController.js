@@ -100,15 +100,25 @@ exports.getDonors = catchAsync(async (req, res, next) => {
     ],
   };
 
+  // Map 'city' query to 'location.city' for proper filtering
+  if (req.query.city) {
+    eligibilityFilter["location.city"] = new RegExp(req.query.city, "i"); // Case-insensitive partial match
+    delete req.query.city; // Remove from query string to avoid double filtering/parsing issues
+  }
+
   const features = new APIFeatures(Donor.find(eligibilityFilter), req.query)
     .filter()
     .search()
-    .build()
     .sort()
     .limitFields()
     .paginate();
 
   const donors = await features.query;
+  
+  // Debug log
+  console.log('Query:', req.query);
+  console.log('Donors found:', donors.length);
+  // console.log('First donor location:', donors[0]?.location);
 
   // Count total documents for pagination metadata (filtering applied but not pagination)
   const total = await Donor.countDocuments(features.query.getFilter());

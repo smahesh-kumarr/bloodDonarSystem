@@ -18,11 +18,6 @@ class APIFeatures {
     return this;
   }
 
-  build() {
-    this.query = this.query.find(this.filterObj);
-    return this;
-  }
-
   search() {
     if (this.queryString.search) {
       // Escape special characters to prevent regex errors
