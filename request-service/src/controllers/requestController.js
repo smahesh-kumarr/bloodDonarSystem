@@ -24,7 +24,7 @@ exports.createRequest = catchAsync(async (req, res, next) => {
   const compatibleDonors = await ExternalDonor.find({
     bloodGroup: { $in: compatibleGroups },
     availability: true,
-    userId: { $ne: req.user.id }
+    userId: { $ne: req.user.id },
   }).select("name bloodGroup location phone email");
 
   // 4. Notify Donors (Fire and Forget)
@@ -115,6 +115,34 @@ exports.updateRequestStatus = catchAsync(async (req, res, next) => {
           ),
         );
       }
+
+      // Check 90-day cooldown before completing (just in case they shouldn't be here)
+      if (currentDonor.lastDonationDate) {
+        const lastDonate = new Date(currentDonor.lastDonationDate);
+        const currentDate = new Date();
+        const diffDays = Math.ceil(
+          Math.abs(currentDate - lastDonate) / (1000 * 60 * 60 * 24),
+        );
+        if (diffDays < 90) {
+          return next(
+            new AppError(
+              `You cannot complete a request right now. You are still within your 90-day cooldown.`,
+              403,
+            ),
+          );
+        }
+      }
+
+      // Mark donor explicitly unavailable for 90 days following completion
+      await ExternalDonor.updateOne(
+        { _id: currentDonor._id },
+        {
+          $set: {
+            lastDonationDate: new Date(),
+            availability: false,
+          },
+        },
+      );
     } else {
       // If NOT assigned to a donor yet, only the requester can complete/cancel it
       if (request.requesterId.toString() !== req.user.id) {
@@ -154,6 +182,23 @@ exports.acceptRequest = catchAsync(async (req, res, next) => {
     return next(
       new AppError("You must be a registered donor to accept requests", 403),
     );
+  }
+
+  // 2.5 Check 90-day cooldown
+  if (donor.lastDonationDate) {
+    const lastDonate = new Date(donor.lastDonationDate);
+    const currentDate = new Date();
+    const diffTime = Math.abs(currentDate - lastDonate);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 90) {
+      return next(
+        new AppError(
+          `You cannot accept requests. You are under a 90-day cooldown period. Wait ${90 - diffDays} more days.`,
+          403,
+        ),
+      );
+    }
   }
 
   // 3. Check Compatibility

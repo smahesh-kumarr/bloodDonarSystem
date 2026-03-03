@@ -11,6 +11,11 @@ const requestSchema = new mongoose.Schema({
     ref: "Donor",
     // Optional initially, might be assigned later or open to all
   },
+  targetDonorId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Donor",
+    // For direct personal requests from UI
+  },
   patientName: {
     type: String,
     required: [true, "Please add patient name"],

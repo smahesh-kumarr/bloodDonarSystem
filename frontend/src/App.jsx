@@ -14,6 +14,12 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import DonorDashboard from "./pages/DonorDashboard";
+import FindDonors from "./pages/FindDonors";
+import Home from "./pages/Home";
+import ViewRequests from "./pages/ViewRequests";
+import CreateRequest from "./pages/CreateRequest";
+import { Link } from "react-router-dom";
 
 // Simple Private Route Component
 const PrivateRoute = ({ children }) => {
@@ -41,12 +47,30 @@ const Dashboard = () => {
           <div className="flex justificy-between h-16">
             <div className="flex">
               <div className="flex-shrink-0 flex items-center">
-                <span className="font-bold text-2xl text-red-600">
-                  BloodLink
-                </span>
+                <Link to="/" className="font-bold text-2xl text-red-600">
+                  Redora
+                </Link>
               </div>
             </div>
-            <div className="ml-auto flex items-center">
+            <div className="ml-auto flex items-center gap-4">
+              <Link
+                to="/find-donors"
+                className="text-gray-600 hover:text-red-600 font-medium text-sm"
+              >
+                Find Donors
+              </Link>
+              <Link
+                to="/requests"
+                className="text-gray-600 hover:text-red-600 font-medium text-sm"
+              >
+                Requests
+              </Link>
+              <Link
+                to="/donor-dashboard"
+                className="text-gray-600 hover:text-red-600 font-medium text-sm"
+              >
+                Donor Dashboard
+              </Link>
               <span className="mr-4 text-gray-700">Hello, {user?.name}</span>
               <button
                 onClick={logout}
@@ -108,12 +132,12 @@ const Dashboard = () => {
               </div>
               <div className="bg-gray-50 px-5 py-3">
                 <div className="text-sm">
-                  <a
-                    href="#"
+                  <Link
+                    to="/find-donors"
                     className="font-medium text-red-700 hover:text-red-900"
                   >
                     View donors
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -150,12 +174,63 @@ const Dashboard = () => {
               </div>
               <div className="bg-gray-50 px-5 py-3">
                 <div className="text-sm">
-                  <a
-                    href="#"
+                  <Link
+                    to="/requests"
                     className="font-medium text-blue-700 hover:text-blue-900"
                   >
-                    View all
-                  </a>
+                    View all active requests
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            {/* Donor Action Card */}
+            <div className="bg-white overflow-hidden shadow rounded-lg transform transition hover:scale-105 duration-200">
+              <div className="p-5">
+                <div className="flex items-center">
+                  <div
+                    className={`flex-shrink-0 rounded-md p-3 ${user?.role === "donor" ? "bg-green-500" : "bg-orange-500"}`}
+                  >
+                    <svg
+                      className="h-6 w-6 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      ></path>
+                    </svg>
+                  </div>
+                  <div className="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt className="text-sm font-medium text-gray-500 truncate">
+                        {user?.role === "donor"
+                          ? "Donor Profile"
+                          : "Become a Donor"}
+                      </dt>
+                      <dd className="text-lg font-medium text-gray-900">
+                        {user?.role === "donor"
+                          ? "Manage Availability"
+                          : "Join the cause"}
+                      </dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-50 px-5 py-3">
+                <div className="text-sm">
+                  <Link
+                    to="/donor-dashboard"
+                    className={`font-medium ${user?.role === "donor" ? "text-green-700 hover:text-green-900" : "text-orange-700 hover:text-orange-900"}`}
+                  >
+                    {user?.role === "donor"
+                      ? "Go to Dashboard"
+                      : "Register Now"}
+                  </Link>
                 </div>
               </div>
             </div>
@@ -176,15 +251,48 @@ function App() {
           hideProgressBar={false}
         />
         <Routes>
+          <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/resetpassword/:token" element={<ResetPassword />} />
           <Route
-            path="/"
+            path="/dashboard"
             element={
               <PrivateRoute>
                 <Dashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/donor-dashboard"
+            element={
+              <PrivateRoute>
+                <DonorDashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/find-donors"
+            element={
+              <PrivateRoute>
+                <FindDonors />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/requests"
+            element={
+              <PrivateRoute>
+                <ViewRequests />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/requests/create"
+            element={
+              <PrivateRoute>
+                <CreateRequest />
               </PrivateRoute>
             }
           />

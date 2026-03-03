@@ -52,7 +52,6 @@ const donorSchema = new mongoose.Schema({
     city: String,
     state: String,
     zipcode: String,
-    country: String,
   },
   availability: {
     type: Boolean,
@@ -68,6 +67,15 @@ const donorSchema = new mongoose.Schema({
 });
 
 // Create geospatial index for location
-donorSchema.index({ location: "2dsphere" });
+// Note: We're indexing location.coordinates for 2dsphere queries if we want to store extra data in location
+// However, standard GeoJSON practice suggests keeping geometry pure or using 'properties' field.
+// But mongoose schema above mixes them.
+// To fix "unknown GeoJSON type", we should either:
+// 1. Move address fields out of location
+// 2. Or index `location.coordinates` instead of `location` if we want to keep structure
+// Let's try indexing coordinates directly which is more robust for custom structures
+donorSchema.index({ "location.coordinates": "2dsphere" });
+// Remove old index if it exists (Mongo won't remove it automatically but new one will work)
+// donorSchema.index({ location: "2dsphere" }); // This was the cause of error
 
 module.exports = mongoose.model("Donor", donorSchema);

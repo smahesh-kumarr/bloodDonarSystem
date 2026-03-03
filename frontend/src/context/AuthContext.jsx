@@ -8,6 +8,11 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const logout = () => {
+    authService.logout();
+    setUser(null);
+  };
+
   useEffect(() => {
     const fetchUser = async () => {
       const token = Cookies.get("token");
@@ -20,7 +25,7 @@ export const AuthProvider = ({ children }) => {
             // If token invalid, remove it
             logout();
           }
-        } catch (error) {
+        } catch {
           logout();
         }
       }
@@ -48,11 +53,6 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
-  const logout = () => {
-    authService.logout();
-    setUser(null);
-  };
-
   const forgotPassword = async (email) => {
     return await authService.forgotPassword(email);
   };
@@ -67,7 +67,17 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, forgotPassword, resetPassword, loading }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        login,
+        register,
+        logout,
+        forgotPassword,
+        resetPassword,
+        loading,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
