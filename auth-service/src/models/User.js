@@ -24,8 +24,15 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ["user", "donor", "admin"],
+    enum: ["user", "donor", "hospital", "admin"],
     default: "user",
+  },
+  isVerified: {
+    type: Boolean,
+    default: function () {
+      // Hospitals require verification, others don't by default
+      return this.role !== "hospital";
+    },
   },
   isActive: {
     type: Boolean,

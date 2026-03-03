@@ -27,6 +27,26 @@ exports.register = catchAsync(async (req, res, next) => {
     role,
   });
 
+  if (role === "hospital") {
+    // In production, BASE_URL should from env
+    const baseUrl = process.env.BASE_URL || "http://localhost:5001";
+    const approveUrl = `${baseUrl}/api/v1/auth/verify-hospital/${user._id}/approve`;
+    const rejectUrl = `${baseUrl}/api/v1/auth/verify-hospital/${user._id}/reject`;
+
+    try {
+      await sendEmail({
+        email: "maheshkumarawsdevops@gmail.com",
+        subject: "New Hospital Pending Approval",
+        message: `A new hospital "${name}" with official email ${email} has registered and requires admin approval.
+        
+To approve: ${approveUrl}
+To reject: ${rejectUrl}`,
+      });
+    } catch (err) {
+      console.error("Failed to notify admin:", err);
+    }
+  }
+
   sendTokenResponse(user, 201, res);
 });
 
@@ -53,6 +73,12 @@ exports.login = catchAsync(async (req, res, next) => {
 
   if (!isMatch) {
     return next(new AppError("Invalid credentials", 401));
+  }
+
+  if (user.role === "hospital" && !user.isVerified) {
+    return next(
+      new AppError("Your hospital account is awaiting admin approval", 403),
+    );
   }
 
   sendTokenResponse(user, 200, res);
@@ -89,7 +115,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   // In production, this should be in an env var like process.env.FRONTEND_URL
   const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
   const resetUrl = `${frontendUrl}/resetpassword/${resetToken}`;
- 
+
   const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please click the link below to reset your password: \n\n ${resetUrl}`;
 
   try {
@@ -141,6 +167,62 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   await user.save();
 
   sendTokenResponse(user, 200, res);
+});
+
+// @desc    Verify hospital from email
+// @route   GET /api/v1/auth/verify-hospital/:id/:action
+// @access  Public
+exports.verifyHospital = catchAsync(async (req, res, next) => {
+  const { id, action } = req.params;
+
+  const hospital = await User.findById(id);
+
+  if (!hospital || hospital.role !== "hospital") {
+    return next(new AppError("Hospital not found", 404));
+  }
+
+  if (action === "approve") {
+    hospital.isVerified = true;
+    await hospital.save();
+
+    try {
+      await sendEmail({
+        email: hospital.email,
+        subject: "Hospital Account Approved",
+        message:
+          "Your hospital account on Redora has been approved! You can now login.",
+      });
+    } catch (err) {
+      console.error("Failed to notify hospital:", err);
+    }
+
+    res
+      .status(200)
+      .send(
+        "<h1>Hospital Approved Successfully</h1><p>The hospital has been notified.</p>",
+      );
+  } else if (action === "reject") {
+    await User.findByIdAndDelete(id);
+
+    try {
+      await sendEmail({
+        email: hospital.email,
+        subject: "Hospital Account Rejected",
+        message:
+          "We are sorry to inform you that your hospital account registration on Redora has been rejected.",
+      });
+    } catch (err) {
+      console.error("Failed to notify hospital:", err);
+    }
+
+    res
+      .status(200)
+      .send(
+        "<h1>Hospital Rejected Successfully</h1><p>The hospital account has been deleted and notified.</p>",
+      );
+  } else {
+    return next(new AppError("Invalid action", 400));
+  }
 });
 
 // Helper function to get token from model, create cookie and send response
