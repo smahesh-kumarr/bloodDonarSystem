@@ -136,15 +136,24 @@ exports.updateInventory = catchAsync(async (req, res, next) => {
 // @route   POST /api/v1/hospital/transfer
 // @access  Private (hospital)
 exports.createTransfer = catchAsync(async (req, res, next) => {
-  const { toHospitalId, bloodGroup, units } = req.body;
+  const { toHospitalId, receiverEmail, bloodGroup, units } = req.body;
 
   const userId = req.user._id || req.user.id;
   const requester = await Hospital.findOne({ userId });
   if (!requester) return next(new AppError("Hospital profile not found", 404));
 
-  const targetHospital = await Hospital.findById(toHospitalId);
+  let targetHospital;
+  if (receiverEmail) {
+    targetHospital = await Hospital.findOne({ email: receiverEmail });
+  } else {
+    targetHospital = await Hospital.findById(toHospitalId);
+  }
+
   if (!targetHospital)
     return next(new AppError("Target hospital not found", 404));
+
+  if (targetHospital._id.toString() === requester._id.toString())
+    return next(new AppError("Cannot transfer to your own hospital", 400));
 
   const transfer = await Transfer.create({
     fromHospital: requester._id,
@@ -176,12 +185,19 @@ exports.getTransfers = catchAsync(async (req, res, next) => {
 
   const transfers = await Transfer.find({
     $or: [{ fromHospital: hospital._id }, { toHospital: hospital._id }],
-  }).populate("fromHospital toHospital", "hospitalName email contactNumber");
+  }).populate("fromHospital toHospital", "hospitalName email contactNumber").sort("-createdAt");
+
+  const incoming = transfers.filter(
+    (t) => t.toHospital && t.toHospital._id.toString() === hospital._id.toString()
+  );
+  
+  const outgoing = transfers.filter(
+    (t) => t.fromHospital && t.fromHospital._id.toString() === hospital._id.toString()
+  );
 
   res.status(200).json({
     success: true,
-    count: transfers.length,
-    data: transfers,
+    data: { incoming, outgoing },
   });
 });
 

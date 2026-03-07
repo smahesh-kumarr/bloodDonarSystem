@@ -182,7 +182,7 @@ const HospitalTransfers = () => {
                     >
                       <div>
                         <p className="font-medium text-gray-800">
-                          From: {t.senderId?.name || t.senderId}
+                          From: {t.fromHospital?.hospitalName || t.fromHospital?.email || "Unknown"}
                         </p>
                         <p className="text-sm text-gray-500">
                           {t.units} Units of{" "}
@@ -248,7 +248,7 @@ const HospitalTransfers = () => {
                     >
                       <div>
                         <p className="font-medium text-gray-800">
-                          To: {t.receiverId?.name || t.receiverId}
+                          To: {t.toHospital?.hospitalName || t.toHospital?.email || "Unknown"}
                         </p>
                         <p className="text-sm text-gray-500">
                           {t.units} Units of{" "}
