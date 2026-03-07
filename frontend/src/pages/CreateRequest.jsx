@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import requestService from "../services/requestService";
 import notificationService from "../services/notificationService";
+import hospitalService from "../services/hospitalService";
 import AuthContext from "../context/AuthContext";
 import { toast } from "react-toastify";
 import {
@@ -20,6 +21,24 @@ const CreateRequest = () => {
   const location = useLocation();
   const [loading, setLoading] = useState(false);
   const targetDonor = location.state?.targetDonor;
+
+  useEffect(() => {
+    if (user?.role === "hospital") {
+      hospitalService
+        .getMe()
+        .then((res) => {
+          if (res?.data) {
+            setFormData((prev) => ({
+              ...prev,
+              hospitalName: res.data.hospitalName || user.name || "",
+              location: res.data.address || res.data.location || "",
+              contactNumber: res.data.contactNumber || "",
+            }));
+          }
+        })
+        .catch((err) => console.error("Could not fetch hospital data", err));
+    }
+  }, [user]);
 
   const [formData, setFormData] = useState({
     patientName: "",

@@ -1,0 +1,1 @@
+const mongoose = require('mongoose'); mongoose.connect('mongodb://127.0.0.1:27017/blood-donation-request').then(async () => { const Request = require('./src/models/Request'); console.log((await Request.find({status: {$ne: 'completed'}}).find({})).length); process.exit(); });

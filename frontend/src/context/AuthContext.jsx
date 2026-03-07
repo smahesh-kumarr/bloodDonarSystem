@@ -46,9 +46,14 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     const data = await authService.register(userData);
-    if (data.token) {
+
+    // Only auto-login if the user is NOT a hospital
+    // Hospitals must wait for email verification
+    if (data.token && userData.role !== "hospital") {
       const user = await authService.getCurrentUser();
       setUser(user);
+    } else if (userData.role === "hospital") {
+      authService.logout(); // Clear the cookie that authService.js just set
     }
     return data;
   };

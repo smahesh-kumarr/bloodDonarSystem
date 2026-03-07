@@ -19,7 +19,10 @@ import FindDonors from "./pages/FindDonors";
 import Home from "./pages/Home";
 import ViewRequests from "./pages/ViewRequests";
 import CreateRequest from "./pages/CreateRequest";
+import HospitalDashboard from "./pages/HospitalDashboard";
+import HospitalTransfers from "./pages/HospitalTransfers";
 import { Link } from "react-router-dom";
+import Navbar from "./components/Navbar";
 
 // Simple Private Route Component
 const PrivateRoute = ({ children }) => {
@@ -36,52 +39,45 @@ const PrivateRoute = ({ children }) => {
   return children;
 };
 
+// Hospital Only Route
+const HospitalRoute = ({ children }) => {
+  const { user, loading } = useContext(AuthContext);
+
+  if (loading)
+    return <div className="flex justify-center mt-10">Loading...</div>;
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role !== "hospital") return <Navigate to="/dashboard" replace />;
+
+  // Optional: If you want to force them to wait until admin verifies
+  if (!user.isVerified) {
+    return (
+      <div className="flex flex-col justify-center items-center h-screen text-center">
+        <h2 className="text-2xl font-bold text-red-600 mb-2">
+          Pending Verification
+        </h2>
+        <p className="text-gray-600">
+          Your hospital account is awaiting admin approval.
+        </p>
+        <button
+          onClick={() => (window.location.href = "/")}
+          className="mt-4 text-blue-500 underline"
+        >
+          Return Home
+        </button>
+      </div>
+    );
+  }
+
+  return children;
+};
+
 // Placeholder Dashboard (Inline for now)
 const Dashboard = () => {
   const { user, logout } = useContext(AuthContext);
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
-      <nav className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justificy-between h-16">
-            <div className="flex">
-              <div className="flex-shrink-0 flex items-center">
-                <Link to="/" className="font-bold text-2xl text-red-600">
-                  Redora
-                </Link>
-              </div>
-            </div>
-            <div className="ml-auto flex items-center gap-4">
-              <Link
-                to="/find-donors"
-                className="text-gray-600 hover:text-red-600 font-medium text-sm"
-              >
-                Find Donors
-              </Link>
-              <Link
-                to="/requests"
-                className="text-gray-600 hover:text-red-600 font-medium text-sm"
-              >
-                Requests
-              </Link>
-              <Link
-                to="/donor-dashboard"
-                className="text-gray-600 hover:text-red-600 font-medium text-sm"
-              >
-                Donor Dashboard
-              </Link>
-              <span className="mr-4 text-gray-700">Hello, {user?.name}</span>
-              <button
-                onClick={logout}
-                className="bg-red-50 text-red-700 px-4 py-2 rounded-md hover:bg-red-100 transition font-medium text-sm"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
@@ -245,11 +241,8 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <ToastContainer
-          position="top-right"
-          autoClose={3000}
-          hideProgressBar={false}
-        />
+        <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
+        <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
@@ -294,6 +287,22 @@ function App() {
               <PrivateRoute>
                 <CreateRequest />
               </PrivateRoute>
+            }
+          />
+          <Route
+            path="/hospital-dashboard"
+            element={
+              <HospitalRoute>
+                <HospitalDashboard />
+              </HospitalRoute>
+            }
+          />
+          <Route
+            path="/hospital-transfers"
+            element={
+              <HospitalRoute>
+                <HospitalTransfers />
+              </HospitalRoute>
             }
           />
         </Routes>

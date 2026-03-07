@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useContext } from "react";
 import donorService from "../services/donorService";
+import hospitalService from "../services/hospitalService";
 // import notificationService from "../services/notificationService";
 import AuthContext from "../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
@@ -73,8 +74,54 @@ const FindDonors = () => {
       const city = String(activeFilters.city || "").trim();
       if (city) normalized.city = city;
 
+      // 1. Fetch individual donors
       const res = await donorService.getDonors(normalized);
-      setDonors(Array.isArray(res?.data) ? res.data : []);
+      let fetchedDonors = Array.isArray(res?.data) ? res.data : [];
+      fetchedDonors = fetchedDonors.map((d) => ({ ...d, listType: "donor" }));
+
+      // 2. Fetch hospitals
+      let hospitalList = [];
+      try {
+        const hRes = await hospitalService.getAllHospitals();
+        let fetchedHospitals = Array.isArray(hRes?.data) ? hRes.data : [];
+
+        fetchedHospitals.forEach((h) => {
+          if (city && h.city?.toLowerCase() !== city.toLowerCase()) return;
+
+          const getHospitalAvailability = (bloodGroupFilter) => {
+            if (bloodGroupFilter && bloodGroupFilter.toLowerCase() !== "all") {
+              return h.inventory && h.inventory[bloodGroupFilter] > 0;
+            }
+            return (
+              h.inventory &&
+              Object.values(h.inventory).some((units) => units > 0)
+            );
+          };
+
+          const isAvailable = getHospitalAvailability(bg);
+
+          if (normalized.availability === "false") return;
+          if (normalized.availability === "true" && !isAvailable) return;
+
+          const displayBg = bg && bg.toLowerCase() !== "all" ? bg : "Bank";
+
+          hospitalList.push({
+            _id: h._id,
+            name: h.hospitalName,
+            email: h.email,
+            city: h.city,
+            location: { formattedAddress: h.address },
+            phone: h.contactNumber,
+            bloodGroup: displayBg,
+            availability: isAvailable,
+            listType: "hospital",
+          });
+        });
+      } catch (err) {
+        console.error("Failed to fetch hospitals independently:", err);
+      }
+
+      setDonors([...fetchedDonors, ...hospitalList]);
       setCurrentPage(1); // Reset to first page on new search
     } catch (error) {
       console.error("Failed to fetch donors:", error);

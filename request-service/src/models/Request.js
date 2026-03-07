@@ -4,12 +4,20 @@ const requestSchema = new mongoose.Schema({
   requesterId: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
-    ref: "User",
+  },
+  createdByType: {
+    type: String,
+    enum: ["user", "hospital"],
+    default: "user"
   },
   donorId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Donor",
     // Optional initially, might be assigned later or open to all
+  },
+  acceptedByHospitalId: {
+    type: mongoose.Schema.Types.ObjectId,
+    // Reference to user ID of the hospital
   },
   targetDonorId: {
     type: mongoose.Schema.Types.ObjectId,

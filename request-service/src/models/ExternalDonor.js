@@ -11,7 +11,7 @@ dotenv.config();
 // with the main mongoose.connect() used in App.js
 const conn = mongoose.createConnection(
   process.env.DONOR_MONGO_URI ||
-    "mongodb://localhost:27017/blood-donation-donor",
+    "mongodb://127.0.0.1:27017/blood-donation-donor",
 );
 
 // We only need the schema for querying, strictness depends on needs.

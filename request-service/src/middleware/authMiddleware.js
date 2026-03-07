@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const axios = require("axios");
 const AppError = require("../utils/AppError");
 const catchAsync = require("../utils/catchAsync");
 
@@ -20,9 +21,19 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // { id, iat, exp }
+
+    // As done in hospital-service, fetch the full user payload from auth-service so we have the role
+    const response = await axios.get(
+      `${process.env.AUTH_SERVICE_URL || "http://localhost:5001"}/api/v1/auth/me`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+
+    req.user = response.data.data;
     next();
   } catch (err) {
+    console.error(err);
     return next(new AppError("Not authorized to access this route", 401));
   }
 });

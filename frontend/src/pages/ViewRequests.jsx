@@ -128,19 +128,50 @@ const ViewRequests = () => {
           const resDonated = await requestService.getCompletedRequests({
             donorId: donorProfile._id,
           });
-          donatedData = Array.isArray(resDonated?.data) ? resDonated.data : [];
+          donatedData = (Array.isArray(resDonated?.data) ? resDonated.data : (Array.isArray(resDonated?.data?.data) ? resDonated.data.data : (Array.isArray(resDonated?.requests) ? resDonated.requests : [])));
+        }
+
+        let hospitalData = [];
+        if (user?.role === "hospital") {
+          const resHospital = await requestService.getCompletedRequests({
+            acceptedByHospitalId: user?._id || user?.id,
+          });
+          hospitalData = (Array.isArray(resHospital?.data) ? resHospital.data : (Array.isArray(resHospital?.data?.data) ? resHospital.data.data : (Array.isArray(resHospital?.requests) ? resHospital.requests : [])));
         }
 
         // Combine and map to remove duplicates just in case
-        const combined = [...createdData, ...donatedData];
+        const combined = [...createdData, ...donatedData, ...hospitalData];
         const map = new Map();
         combined.forEach((req) => map.set(req._id, req));
         setRequests(Array.from(map.values()));
-      } else {
-        const filters =
-          activeTab === "my" ? { requesterId: user?._id || user?.id } : {};
-        const res = await requestService.getRequests(filters);
-        setRequests(Array.isArray(res?.data) ? res.data : []);
+        } else if (activeTab === "my") {
+          const resCreated = await requestService.getRequests({
+            requesterId: user?._id || user?.id,
+          });
+          const createdData = (Array.isArray(resCreated?.data) ? resCreated.data : (Array.isArray(resCreated?.data?.data) ? resCreated.data.data : (Array.isArray(resCreated?.requests) ? resCreated.requests : [])));
+
+          let donatedData = [];
+           if (donorProfile) {
+             const resDonated = await requestService.getRequests({
+               donorId: donorProfile._id,
+             });
+             donatedData = (Array.isArray(resDonated?.data) ? resDonated.data : (Array.isArray(resDonated?.data?.data) ? resDonated.data.data : (Array.isArray(resDonated?.requests) ? resDonated.requests : [])));
+           }
+           let hospitalData = [];
+           if (user?.role === "hospital") {
+             const resHospital = await requestService.getRequests({
+               acceptedByHospitalId: user?._id || user?.id,
+             });
+             hospitalData = (Array.isArray(resHospital?.data) ? resHospital.data : (Array.isArray(resHospital?.data?.data) ? resHospital.data.data : (Array.isArray(resHospital?.requests) ? resHospital.requests : [])));
+           }
+
+           const combined = [...createdData, ...donatedData, ...hospitalData];
+           const map = new Map();
+           combined.forEach(req => map.set(req._id, req));
+           setRequests(Array.from(map.values()));
+        } else {
+          const res = await requestService.getRequests({});
+          setRequests(Array.isArray(res?.data) ? res.data : (Array.isArray(res?.data?.data) ? res.data.data : (Array.isArray(res?.requests) ? res.requests : [])));
       }
     } catch (error) {
       console.error(error);
@@ -169,24 +200,36 @@ const ViewRequests = () => {
     fetchRequests();
   }, [fetchRequests]);
 
-  const handleAcceptRequest = async (id) => {
-    if (donorProfile?.lastDonationDate) {
-      const lastDonate = new Date(donorProfile.lastDonationDate);
-      const today = new Date();
-      const diffTime = today - lastDonate;
-      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-      if (diffDays < 90) {
-        toast.error(
-          `You cannot accept requests during your 90-day cooldown period. (${90 - diffDays} days left)`,
-        );
+  const handleAcceptRequest = async (req) => {
+    // If the logged-in user is a hospital, show a specific warning
+    if (user?.role === "hospital") {
+      if (
+        !window.confirm(
+          `Hospital Alert: Accepting this request will deduct ${req.units} units of ${req.bloodGroup} from your inventory. Proceed?`,
+        )
+      ) {
         return;
+      }
+    } else {
+      // It's a standard user, check 90-day cooldown
+      if (donorProfile?.lastDonationDate) {
+        const lastDonate = new Date(donorProfile.lastDonationDate);
+        const today = new Date();
+        const diffTime = today - lastDonate;
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays < 90) {
+          toast.error(
+            `You cannot accept requests during your 90-day cooldown period. (${90 - diffDays} days left)`,
+          );
+          return;
+        }
       }
     }
 
     try {
-      await requestService.acceptRequest(id);
-      toast.success("Request accepted! Please contact the given number.");
+      await requestService.acceptRequest(req._id);
+      toast.success("Request accepted successfully!");
       fetchRequests(); // Refresh the list
     } catch (error) {
       console.error(error);
@@ -195,7 +238,7 @@ const ViewRequests = () => {
   };
 
   const handleMarkCompleted = async (id) => {
-    if (donorProfile?.lastDonationDate) {
+    if (user?.role !== "hospital" && donorProfile?.lastDonationDate) {
       const lastDonate = new Date(donorProfile.lastDonationDate);
       const today = new Date();
       const diffTime = today - lastDonate;
@@ -366,14 +409,16 @@ const ViewRequests = () => {
                 req.requesterId === user?._id || req.requesterId === user?.id;
 
               const isAcceptor =
-                donorProfile && req.donorId === donorProfile._id;
+                (donorProfile && req.donorId === donorProfile._id) ||
+                (user?.role === "hospital" &&
+                  req.acceptedByHospitalId === (user?._id || user?.id));
 
-              const canComplete = isAcceptor;
+              const canComplete = isAcceptor || isCreator; // Allow both standard donors and hospitals (or the requester) to mark it complete.
 
               return (
                 <div
                   key={req._id}
-                  className={`group bg-white rounded-3xl shadow-md hover:shadow-2xl transition-all duration-300 border border-gray-100 flex flex-col relative overflow-hidden transform hover:-translate-y-1 ${
+                  className={`group bg-white rounded-3xl shadow-[0_12px_40px_rgba(0,0,0,0.06)] overflow-hidden flex flex-col transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.12)] hover:-translate-y-2 relative border border-gray-100 ${
                     req.isEmergency ? "ring-2 ring-red-500" : ""
                   }`}
                 >
@@ -513,7 +558,7 @@ const ViewRequests = () => {
                         </button>
                       ) : (
                         <button
-                          onClick={() => handleAcceptRequest(req._id)}
+                          onClick={() => handleAcceptRequest(req)}
                           className={`w-full py-4 px-4 rounded-xl font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 flex items-center justify-center gap-2 ${
                             req.isEmergency
                               ? "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-red-600/30"

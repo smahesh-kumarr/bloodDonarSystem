@@ -3,6 +3,7 @@ const ExternalDonor = require("../models/ExternalDonor");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/AppError");
 const APIFeatures = require("../utils/APIFeatures");
+const axios = require("axios");
 const {
   getCompatibleDonorBloodGroups,
 } = require("../utils/bloodCompatibility");
@@ -10,7 +11,9 @@ const { notifyDonors } = require("../utils/notificationClient");
 
 // @desc    Create a blood request
 exports.createRequest = catchAsync(async (req, res, next) => {
-  req.body.requesterId = req.user.id;
+  const userId = req.user._id || req.user.id;
+  req.body.requesterId = userId;
+  req.body.createdByType = req.user.role === "hospital" ? "hospital" : "user";
 
   // 1. Create Request
   const request = await Request.create(req.body);
@@ -24,7 +27,7 @@ exports.createRequest = catchAsync(async (req, res, next) => {
   const compatibleDonors = await ExternalDonor.find({
     bloodGroup: { $in: compatibleGroups },
     availability: true,
-    userId: { $ne: req.user.id },
+    userId: { $ne: userId },
   }).select("name bloodGroup location phone email");
 
   // 4. Notify Donors (Fire and Forget)
@@ -99,10 +102,27 @@ exports.updateRequestStatus = catchAsync(async (req, res, next) => {
 
   // Logic for 'completed' status
   if (status === "completed") {
+    // Check if it was accepted by a hospital
+    if (request.acceptedByHospitalId) {
+      if (
+        request.acceptedByHospitalId.toString() !==
+        (req.user._id || req.user.id).toString()
+      ) {
+        return next(
+          new AppError(
+            "Only the hospital that accepted the request can mark it completed",
+            403,
+          ),
+        );
+      }
+      // Hospital doesn't have 90-day cooldown, proceed to complete.
+    }
     // If a donor is assigned (accepted request), STRICTLY check if current user is that donor
-    if (request.donorId) {
+    else if (request.donorId) {
       // Since donorId refers to the Donor Profile ID, we must find the current user's donor profile
-      const currentDonor = await ExternalDonor.findOne({ userId: req.user.id });
+      const currentDonor = await ExternalDonor.findOne({
+        userId: req.user._id || req.user.id,
+      });
 
       if (
         !currentDonor ||
@@ -145,7 +165,8 @@ exports.updateRequestStatus = catchAsync(async (req, res, next) => {
       );
     } else {
       // If NOT assigned to a donor yet, only the requester can complete/cancel it
-      if (request.requesterId.toString() !== req.user.id) {
+      const userId = req.user._id || req.user.id;
+      if (request.requesterId.toString() !== userId.toString()) {
         return next(
           new AppError("Not authorized to complete this request", 403),
         );
@@ -175,9 +196,73 @@ exports.acceptRequest = catchAsync(async (req, res, next) => {
   if (request.status !== "pending") {
     return next(new AppError("This request is no longer pending", 400));
   }
+  const userId = req.user._id || req.user.id;
 
-  // 2. Identify Donor
-  const donor = await ExternalDonor.findOne({ userId: req.user.id });
+  // Prevent users/hospitals from accepting their own requests
+  if (request.requesterId.toString() === userId.toString()) {
+    return next(new AppError("You cannot accept your own request", 400));
+  }
+  // --- HOSPITAL FLOW ---
+  if (req.user.role === "hospital") {
+    try {
+      // Deduct from hospital inventory via API
+      const inventoryUpdate = {};
+      inventoryUpdate[request.bloodGroup] = -request.units; // subtract
+
+      let token = "";
+      if (
+        req.headers.authorization &&
+        req.headers.authorization.startsWith("Bearer")
+      ) {
+        token = req.headers.authorization.split(" ")[1];
+      } else if (req.cookies?.token) {
+        token = req.cookies.token;
+      }
+
+      const config = {
+        headers: { Authorization: `Bearer ${token}` },
+      };
+
+      await axios.put(
+        `${process.env.HOSPITAL_SERVICE_URL || "http://localhost:5005"}/api/v1/hospital/inventory`,
+        inventoryUpdate,
+        config,
+      );
+    } catch (error) {
+      if (error.response && error.response.status === 400) {
+        return next(
+          new AppError("Insufficient inventory to accept request", 400),
+        );
+      }
+      return next(
+        new AppError(
+          "Failed to update hospital inventory: " + error.message,
+          500,
+        ),
+      );
+    }
+
+    const userId = req.user._id || req.user.id;
+    request.acceptedByHospitalId = userId;
+    request.status = "accepted";
+    await request.save();
+
+    return res.status(200).json({
+      success: true,
+      data: request,
+      message: `Hospital has accepted the request. Deducted ${request.units} units of ${request.bloodGroup} from inventory.`,
+    });
+  }
+
+  // --- DONOR FLOW ---  // 2. Identify Donor
+  const qId = req.user._id || req.user.id;
+  console.log(
+    "Looking up donor in request-service with userId:",
+    qId,
+    "typeof:",
+    typeof qId,
+  );
+  const donor = await ExternalDonor.findOne({ userId: qId });
   if (!donor) {
     return next(
       new AppError("You must be a registered donor to accept requests", 403),
@@ -229,9 +314,16 @@ exports.acceptRequest = catchAsync(async (req, res, next) => {
 exports.deleteRequest = catchAsync(async (req, res, next) => {
   const request = await Request.findById(req.params.id);
   if (!request) return next(new AppError("No request found with that ID", 404));
-  if (request.requesterId.toString() !== req.user.id) {
-    return next(new AppError("Not authorized to delete this request", 401));
+
+  const userId = req.user._id || req.user.id;
+  if (request.requesterId.toString() !== userId.toString()) {
+    return next(new AppError("Not authorized to delete this request", 403));
   }
+
   await Request.findByIdAndDelete(req.params.id);
-  res.status(200).json({ success: true, data: {} });
+
+  res.status(204).json({
+    success: true,
+    data: null,
+  });
 });

@@ -26,8 +26,16 @@ const Register = () => {
     e.preventDefault();
     try {
       await register(formData);
-      toast.success("Registration Successful");
-      navigate("/");
+
+      if (formData.role === "hospital") {
+        toast.success(
+          "Hospital request submitted! Please wait for admin approval via email.",
+        );
+        navigate("/login"); // Push to login so they can sit there
+      } else {
+        toast.success("Registration Successful");
+        navigate("/"); // Normal users go straight to dashboard
+      }
     } catch (error) {
       toast.error(error.response?.data?.message || "Registration Failed");
     }
@@ -122,6 +130,17 @@ const Register = () => {
                 className="text-red-600 focus:ring-red-500"
               />
               <span className="ml-2 text-gray-700">Donor</span>
+            </label>
+            <label className="flex items-center">
+              <input
+                type="radio"
+                name="role"
+                value="hospital"
+                checked={formData.role === "hospital"}
+                onChange={handleChange}
+                className="text-red-600 focus:ring-red-500"
+              />
+              <span className="ml-2 text-gray-700">Hospital</span>
             </label>
           </div>
         </div>

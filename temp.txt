@@ -1,0 +1,15 @@
+﻿            {filteredRequests.map((req) => {
+              const isCreator =
+                req.requesterId === user?._id || req.requesterId === user?.id;
+
+              const isAcceptor =
+                  (donorProfile && req.donorId === donorProfile._id) ||
+                  (user?.role === "hospital" && req.acceptedByHospitalId === (user?._id || user?.id));
+
+                const canComplete = isAcceptor || isCreator; // Allow both standard donors and hospitals (or the requester) to mark it complete.
+                    req.isEmergency ? "ring-2 ring-red-500" : ""
+                  }`}
+                >
+                  {/* Priority Banner Header */}
+                  {req.isEmergency && (
+                    <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-red-600 to-red-500 text-white text-[11px] font-black uppercase tracking-widest py-2 px-4 flex items-center justify-center gap-2 z-10 animate-pulse border-b border-red-700">
