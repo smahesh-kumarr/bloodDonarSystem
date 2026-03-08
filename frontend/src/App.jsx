@@ -269,13 +269,19 @@ function App() {
           />
                     <Route path="/campaigns" element={<PrivateRoute><Campaigns /></PrivateRoute>} />
             <Route path="/hospital/campaigns" element={<HospitalRoute><HospitalCampaigns /></HospitalRoute>} />
-          </Routes>
+                    <Route path="/requests" element={<PrivateRoute><ViewRequests /></PrivateRoute>} />
+          <Route path="/create-request" element={<PrivateRoute><CreateRequest /></PrivateRoute>} />
+          <Route path="/find-donors" element={<PrivateRoute><FindDonors /></PrivateRoute>} />
+          <Route path="/hospital-dashboard" element={<HospitalRoute><HospitalDashboard /></HospitalRoute>} />
+          <Route path="/hospital-transfers" element={<HospitalRoute><HospitalTransfers /></HospitalRoute>} />
+        </Routes>
       </Router>
     </AuthProvider>
   );
 }
 
 export default App;
+
 
 
 
