@@ -26,8 +26,10 @@ if (process.env.NODE_ENV === "development") {
 
 // Route files
 const hospitalRoutes = require("./routes/hospitalRoutes");
+const campaignRoutes = require("./routes/campaignRoutes");
 
 // Mount routers
+app.use("/api/v1/hospital/campaigns", campaignRoutes);
 app.use("/api/v1/hospital", hospitalRoutes);
 
 // Error handler middleware

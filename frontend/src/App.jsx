@@ -21,6 +21,8 @@ import ViewRequests from "./pages/ViewRequests";
 import CreateRequest from "./pages/CreateRequest";
 import HospitalDashboard from "./pages/HospitalDashboard";
 import HospitalTransfers from "./pages/HospitalTransfers";
+import Campaigns from "./pages/Campaigns";
+import HospitalCampaigns from "./pages/HospitalCampaigns";
 import { Link } from "react-router-dom";
 import Navbar from "./components/Navbar";
 
@@ -265,50 +267,17 @@ function App() {
               </PrivateRoute>
             }
           />
-          <Route
-            path="/find-donors"
-            element={
-              <PrivateRoute>
-                <FindDonors />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/requests"
-            element={
-              <PrivateRoute>
-                <ViewRequests />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/requests/create"
-            element={
-              <PrivateRoute>
-                <CreateRequest />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/hospital-dashboard"
-            element={
-              <HospitalRoute>
-                <HospitalDashboard />
-              </HospitalRoute>
-            }
-          />
-          <Route
-            path="/hospital-transfers"
-            element={
-              <HospitalRoute>
-                <HospitalTransfers />
-              </HospitalRoute>
-            }
-          />
-        </Routes>
+                    <Route path="/campaigns" element={<PrivateRoute><Campaigns /></PrivateRoute>} />
+            <Route path="/hospital/campaigns" element={<HospitalRoute><HospitalCampaigns /></HospitalRoute>} />
+          </Routes>
       </Router>
     </AuthProvider>
   );
 }
 
 export default App;
+
+
+
+
+

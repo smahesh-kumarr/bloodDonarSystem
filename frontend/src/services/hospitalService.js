@@ -14,13 +14,13 @@ const getAuthHeaders = () => {
   };
 };
 
+// Create a new hospital profile (immediately after registration)
 // Get the current hospital's detailed profile & inventory
 const getMe = async () => {
-  const response = await axios.get(`${HOSPITAL_API}/me`, getAuthHeaders());
+  const response = await axios.get("`${HOSPITAL_API}/me`", getAuthHeaders());
   return response.data;
 };
 
-// Create a new hospital profile (immediately after registration)
 const createProfile = async (profileData) => {
   const response = await axios.post(
     `${HOSPITAL_API}/profile`,
@@ -44,7 +44,7 @@ const updateProfile = async (profileData) => {
 const updateInventory = async (bloodGroup, units, operation = "add") => {
   // Backend expects an object like {"A+": 2, "O-": -1}
   const payload = {
-    [bloodGroup]: operation === "add" ? units : -units
+    [bloodGroup]: operation === "add" ? units : -units,
   };
 
   const response = await axios.put(
@@ -110,6 +110,31 @@ const hospitalService = {
   acceptTransfer,
   completeTransfer,
   getAllHospitals,
+  createCampaign: async (data) =>
+    (await axios.post(`${HOSPITAL_API}/campaigns`, data, getAuthHeaders()))
+      .data,
+  getMyCampaigns: async () =>
+    (await axios.get(`${HOSPITAL_API}/campaigns`, getAuthHeaders())).data,
+  updateCampaign: async (id, data) =>
+    (await axios.put(`${HOSPITAL_API}/campaigns/${id}`, data, getAuthHeaders()))
+      .data,
+  getActiveCampaigns: async () =>
+    (await axios.get(`${HOSPITAL_API}/campaigns/active`)).data,
+  getCampaignParticipants: async (id) =>
+    (
+      await axios.get(
+        `${HOSPITAL_API}/campaigns/${id}/participants`,
+        getAuthHeaders(),
+      )
+    ).data,
+  registerForCampaign: async (id, data) =>
+    (
+      await axios.post(
+        `${HOSPITAL_API}/campaigns/${id}/register`,
+        data,
+        getAuthHeaders(),
+      )
+    ).data,
 };
 
 export default hospitalService;

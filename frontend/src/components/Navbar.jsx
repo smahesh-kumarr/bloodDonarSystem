@@ -2,6 +2,7 @@ import React, { useContext } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import AuthContext from "../context/AuthContext";
 import {
+  Megaphone,
   LogOut,
   LayoutDashboard,
   Search,
@@ -57,6 +58,12 @@ const Navbar = () => {
                   <LayoutDashboard className="h-4 w-4" /> Dashboard
                 </Link>
                 <Link
+                  to="/hospital/campaigns"
+                  className={`px-3 py-2 rounded-md font-medium text-sm flex items-center gap-2 transition ${isActive("/hospital/campaigns")}`}
+                >
+                  <Megaphone className="h-4 w-4" /> Campaigns
+                </Link>
+                <Link
                   to="/hospital-transfers"
                   className={`px-3 py-2 rounded-md font-medium text-sm flex items-center gap-2 transition ${isActive("/hospital-transfers")}`}
                 >
@@ -71,6 +78,12 @@ const Navbar = () => {
               </>
             ) : (
               <>
+                <Link
+                  to="/campaigns"
+                  className={`px-3 py-2 rounded-md font-medium text-sm flex items-center gap-2 transition ${isActive("/campaigns")}`}
+                >
+                  <Megaphone className="h-4 w-4" /> Campaigns
+                </Link>
                 <Link
                   to="/find-donors"
                   className={`px-3 py-2 rounded-md font-medium text-sm flex items-center gap-2 transition ${isActive("/find-donors")}`}
