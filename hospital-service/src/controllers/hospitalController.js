@@ -9,7 +9,7 @@ const axios = require("axios");
 const notify = async (email, subject, message) => {
   try {
     await axios.post(
-      `${process.env.NOTIFICATION_SERVICE_URL}/api/v1/notifications/email`,
+      `${process.env.NOTIFICATION_SERVICE_URL || "http://localhost:5004"}/api/v1/notifications/send`,
       {
         email,
         subject,
