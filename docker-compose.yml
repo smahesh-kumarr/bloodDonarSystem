@@ -1,0 +1,75 @@
+﻿version: '3.8'
+
+services:
+  auth-service:
+    build: ./auth-service
+    ports:
+      - "5001:5001"
+    env_file:
+      - ./auth-service/.env
+    networks:
+      - blood-donor-net
+
+  donor-service:
+    build: ./donor-service
+    ports:
+      - "5002:5002"
+    env_file:
+      - ./donor-service/.env
+    networks:
+      - blood-donor-net
+
+  request-service:
+    build: ./request-service
+    ports:
+      - "5003:5003"
+    env_file:
+      - ./request-service/.env
+    networks:
+      - blood-donor-net
+
+  notification-service:
+    build: ./notification-service
+    ports:
+      - "5004:5004"
+    env_file:
+      - ./notification-service/.env
+    networks:
+      - blood-donor-net
+
+  hospital-service:
+    build: ./hospital-service
+    ports:
+      - "5005:5005"
+    env_file:
+      - ./hospital-service/.env
+    networks:
+      - blood-donor-net
+
+  # This Nginx container acts exactly like AWS Application Load Balancer in production
+  api-gateway:
+    image: nginx:alpine
+    volumes:
+      - ./api-gateway/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "8080:80"
+    depends_on:
+      - auth-service
+      - donor-service
+      - hospital-service
+      - request-service
+      - notification-service
+    networks:
+      - blood-donor-net
+
+  # This Nginx container simulates AWS S3 + Cloudfront Static Web Hosting
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    networks:
+      - blood-donor-net
+      
+networks:
+  blood-donor-net:
+    driver: bridge
