@@ -10,7 +10,7 @@ dotenv.config();
 // We use createConnection() for secondary databases to avoid singleton conflict
 // with the main mongoose.connect() used in App.js
 const conn = mongoose.createConnection(
-  process.env.DONOR_MONGO_URI ||
+  process.env.MONGO_URI ||
     "mongodb://127.0.0.1:27017/blood-donation-donor",
 );
 
