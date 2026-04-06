@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900">
+  <defs>
+    <style>
+      .bg { fill: #f8fafc; }
+      .system { fill: #ffffff; stroke: #334155; stroke-width: 2.5; rx: 18; ry: 18; }
+      .title { font: 700 28px Arial, sans-serif; fill: #0f172a; }
+      .label { font: 600 18px Arial, sans-serif; fill: #0f172a; }
+      .actor-text { font: 600 18px Arial, sans-serif; fill: #1e293b; text-anchor: middle; }
+      .usecase { fill: #fee2e2; stroke: #dc2626; stroke-width: 2; }
+      .usecase-text { font: 600 16px Arial, sans-serif; fill: #7f1d1d; text-anchor: middle; dominant-baseline: middle; }
+      .line { stroke: #475569; stroke-width: 2.2; fill: none; }
+      .actor-stroke { stroke: #0f172a; stroke-width: 3; fill: none; stroke-linecap: round; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1400" height="900"/>
+
+  <rect class="system" x="300" y="60" width="820" height="760"/>
+  <text class="title" x="710" y="100" text-anchor="middle">Blood Donor System</text>
+
+  <line class="line" x1="150" y1="200" x2="420" y2="190"/>
+  <line class="line" x1="150" y1="200" x2="420" y2="300"/>
+  <line class="line" x1="150" y1="200" x2="420" y2="410"/>
+
+  <line class="line" x1="150" y1="380" x2="420" y2="190"/>
+  <line class="line" x1="150" y1="380" x2="420" y2="300"/>
+  <line class="line" x1="150" y1="380" x2="420" y2="520"/>
+
+  <line class="line" x1="150" y1="560" x2="420" y2="190"/>
+  <line class="line" x1="150" y1="560" x2="420" y2="410"/>
+  <line class="line" x1="150" y1="560" x2="420" y2="520"/>
+  <line class="line" x1="150" y1="560" x2="420" y2="630"/>
+
+  <line class="line" x1="1270" y1="300" x2="1000" y2="190"/>
+  <line class="line" x1="1270" y1="300" x2="1000" y2="520"/>
+  <line class="line" x1="1270" y1="300" x2="1000" y2="630"/>
+  <line class="line" x1="1270" y1="300" x2="1000" y2="740"/>
+
+  <line class="line" x1="1270" y1="560" x2="1000" y2="740"/>
+
+  <ellipse class="usecase" cx="520" cy="190" rx="130" ry="42"/>
+  <text class="usecase-text" x="520" y="190">Register / Login</text>
+
+  <ellipse class="usecase" cx="520" cy="300" rx="145" ry="42"/>
+  <text class="usecase-text" x="520" y="300">Manage Donor Profile</text>
+
+  <ellipse class="usecase" cx="520" cy="410" rx="120" ry="42"/>
+  <text class="usecase-text" x="520" y="410">Search Donors</text>
+
+  <ellipse class="usecase" cx="520" cy="520" rx="145" ry="42"/>
+  <text class="usecase-text" x="520" y="520">Create Blood Request</text>
+
+  <ellipse class="usecase" cx="520" cy="630" rx="160" ry="42"/>
+  <text class="usecase-text" x="520" y="630">View / Accept Requests</text>
+
+  <ellipse class="usecase" cx="900" cy="190" rx="165" ry="42"/>
+  <text class="usecase-text" x="900" y="190">Manage Hospital Inventory</text>
+
+  <ellipse class="usecase" cx="900" cy="520" rx="130" ry="42"/>
+  <text class="usecase-text" x="900" y="520">Manage Campaigns</text>
+
+  <ellipse class="usecase" cx="900" cy="630" rx="165" ry="42"/>
+  <text class="usecase-text" x="900" y="630">Create / Manage Transfers</text>
+
+  <ellipse class="usecase" cx="900" cy="740" rx="155" ry="42"/>
+  <text class="usecase-text" x="900" y="740">Verify Hospital / Campaign</text>
+
+  <circle class="actor-stroke" cx="150" cy="120" r="28"/>
+  <line class="actor-stroke" x1="150" y1="148" x2="150" y2="235"/>
+  <line class="actor-stroke" x1="110" y1="178" x2="190" y2="178"/>
+  <line class="actor-stroke" x1="150" y1="235" x2="118" y2="290"/>
+  <line class="actor-stroke" x1="150" y1="235" x2="182" y2="290"/>
+  <text class="actor-text" x="150" y="325">Guest</text>
+
+  <circle class="actor-stroke" cx="150" cy="300" r="28"/>
+  <line class="actor-stroke" x1="150" y1="328" x2="150" y2="415"/>
+  <line class="actor-stroke" x1="110" y1="358" x2="190" y2="358"/>
+  <line class="actor-stroke" x1="150" y1="415" x2="118" y2="470"/>
+  <line class="actor-stroke" x1="150" y1="415" x2="182" y2="470"/>
+  <text class="actor-text" x="150" y="505">Donor</text>
+
+  <circle class="actor-stroke" cx="150" cy="480" r="28"/>
+  <line class="actor-stroke" x1="150" y1="508" x2="150" y2="595"/>
+  <line class="actor-stroke" x1="110" y1="538" x2="190" y2="538"/>
+  <line class="actor-stroke" x1="150" y1="595" x2="118" y2="650"/>
+  <line class="actor-stroke" x1="150" y1="595" x2="182" y2="650"/>
+  <text class="actor-text" x="150" y="685">Requester</text>
+
+  <circle class="actor-stroke" cx="1270" cy="220" r="28"/>
+  <line class="actor-stroke" x1="1270" y1="248" x2="1270" y2="335"/>
+  <line class="actor-stroke" x1="1230" y1="278" x2="1310" y2="278"/>
+  <line class="actor-stroke" x1="1270" y1="335" x2="1238" y2="390"/>
+  <line class="actor-stroke" x1="1270" y1="335" x2="1302" y2="390"/>
+  <text class="actor-text" x="1270" y="425">Hospital</text>
+
+  <circle class="actor-stroke" cx="1270" cy="480" r="28"/>
+  <line class="actor-stroke" x1="1270" y1="508" x2="1270" y2="595"/>
+  <line class="actor-stroke" x1="1230" y1="538" x2="1310" y2="538"/>
+  <line class="actor-stroke" x1="1270" y1="595" x2="1238" y2="650"/>
+  <line class="actor-stroke" x1="1270" y1="595" x2="1302" y2="650"/>
+  <text class="actor-text" x="1270" y="685">Admin</text>
+</svg>

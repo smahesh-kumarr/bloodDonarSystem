@@ -13,11 +13,17 @@ connectDB();
 
 const app = express();
 
+// Trust first hop (AWS ALB) so req.secure and cookies work correctly
+app.set("trust proxy", 1);
+
 // Body parser
 app.use(express.json());
 
-// Enable CORS
-app.use(cors());
+// CORS — origins come from env var (no hardcoding)
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",")
+  : [];
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 
 // Dev logging middleware
 if (process.env.NODE_ENV === "development") {

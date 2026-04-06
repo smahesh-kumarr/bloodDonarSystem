@@ -1,6 +1,12 @@
-﻿FROM node:18-alpine
+FROM node:18-alpine
 WORKDIR /app
+
 COPY package*.json ./
-RUN npm install --production
-COPY . .
+RUN npm ci --omit=dev
+
+COPY src ./src
+
+USER node
+
+EXPOSE 5005
 CMD ["node", "src/app.js"]

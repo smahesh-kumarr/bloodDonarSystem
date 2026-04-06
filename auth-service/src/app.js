@@ -16,11 +16,19 @@ const app = express();
 
 const auth = require("./routes/authRoutes");
 
+// Trust first hop (AWS ALB) so req.secure and cookies work correctly
+app.set("trust proxy", 1);
+
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
 app.use(helmet());
-app.use(cors());
+
+// CORS — origins come from env var (no hardcoding)
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",")
+  : [];
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
